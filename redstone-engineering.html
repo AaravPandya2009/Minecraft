@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redstone Engineering — A Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-void:#120d0a;
+    --bg-stone:#1c1510;
+    --bg-panel:#251c15;
+    --bg-panel-hi:#2f241a;
+    --hairline:#3a2c20;
+    --redstone:#e8380d;
+    --redstone-bright:#ff5a26;
+    --redstone-dim:#5c2011;
+    --copper:#c98a3c;
+    --copper-dim:#7a5a2c;
+    --parchment:#ede1c8;
+    --parchment-dim:#b6a98c;
+    --stone-muted:#8c7d68;
+    --lamp:#ffd873;
+    --display: 'Press Start 2P', monospace;
+    --body: 'IBM Plex Sans', sans-serif;
+    --mono: 'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(232,56,13,0.08), transparent 45%),
+      radial-gradient(ellipse at 90% 10%, rgba(201,138,60,0.06), transparent 40%),
+      var(--bg-void);
+    color:var(--parchment);
+    font-family:var(--body);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+  ::selection{background:var(--redstone-dim); color:var(--parchment);}
+
+  /* ---------- utility ---------- */
+  .wrap{max-width:1180px; margin:0 auto; padding:0 32px;}
+  .eyebrow{
+    font-family:var(--mono); font-size:11px; letter-spacing:.18em; text-transform:uppercase;
+    color:var(--redstone-bright); display:flex; align-items:center; gap:10px; margin-bottom:14px;
+  }
+  .eyebrow::before{content:""; width:18px; height:2px; background:var(--redstone); box-shadow:0 0 8px var(--redstone-bright);}
+  .section-title{
+    font-family:var(--display); font-size:22px; line-height:1.5; color:var(--parchment);
+    text-shadow:0 0 18px rgba(232,56,13,0.25);
+  }
+  .section-lede{max-width:640px; color:var(--parchment-dim); font-size:15.5px; margin-top:16px;}
+
+  /* ---------- nav ---------- */
+  header.nav{
+    position:sticky; top:0; z-index:50;
+    background:rgba(18,13,10,0.88); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--hairline);
+  }
+  header.nav .wrap{display:flex; align-items:center; justify-content:space-between; height:64px;}
+  .brand{display:flex; align-items:center; gap:10px; font-family:var(--display); font-size:11px; letter-spacing:.05em; color:var(--parchment);}
+  .brand .dot{
+    width:9px; height:9px; border-radius:2px; background:var(--redstone-bright);
+    box-shadow:0 0 6px 2px var(--redstone-bright); animation:pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.35;}}
+  nav.links{display:flex; gap:28px; font-family:var(--mono); font-size:13px; color:var(--parchment-dim);}
+  nav.links a{text-decoration:none; transition:color .15s;}
+  nav.links a:hover{color:var(--redstone-bright);}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative; padding:96px 0 84px; overflow:hidden; border-bottom:1px solid var(--hairline);}
+  .hero .wrap{position:relative; z-index:2;}
+  .hero-wire{position:absolute; inset:0; z-index:1; opacity:.55;}
+  .hero h1{
+    font-family:var(--display); font-size:clamp(28px,5vw,52px); line-height:1.35; color:var(--parchment);
+    text-shadow:0 0 30px rgba(232,56,13,0.35), 0 0 4px rgba(255,90,38,.5); max-width:900px;
+  }
+  .hero h1 span{color:var(--redstone-bright);}
+  .hero p.sub{margin-top:22px; max-width:560px; color:var(--parchment-dim); font-size:16.5px;}
+  .hero .rules{
+    margin-top:34px; display:flex; flex-wrap:wrap; gap:10px;
+  }
+  .rule-chip{
+    font-family:var(--mono); font-size:12px; padding:7px 12px; border:1px solid var(--hairline);
+    border-radius:3px; background:var(--bg-panel); color:var(--copper);
+  }
+  .rule-chip::before{content:"✓ "; color:var(--redstone-bright);}
+
+  /* ---------- component grid ---------- */
+  section.components{padding:88px 0; border-bottom:1px solid var(--hairline);}
+  .filter-row{
+    display:flex; flex-wrap:wrap; gap:8px; margin-top:28px; margin-bottom:36px;
+    font-family:var(--mono); font-size:11.5px;
+  }
+  .tag-pill{
+    padding:5px 11px; border-radius:20px; border:1px solid var(--hairline); color:var(--stone-muted);
+    background:var(--bg-panel);
+  }
+  .grid{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(252px,1fr)); gap:16px;
+  }
+  .card{
+    background:linear-gradient(180deg, var(--bg-panel-hi), var(--bg-panel));
+    border:1px solid var(--hairline); border-radius:6px; padding:20px;
+    position:relative; overflow:hidden; transition:border-color .18s, transform .18s;
+  }
+  .card:hover{border-color:var(--redstone-dim); transform:translateY(-2px);}
+  .card::after{
+    content:""; position:absolute; left:0; right:0; bottom:0; height:2px;
+    background:linear-gradient(90deg, transparent, var(--redstone), transparent);
+    opacity:0; transition:opacity .2s;
+  }
+  .card:hover::after{opacity:.8;}
+  .card-icon{
+    width:40px; height:40px; border-radius:5px; background:var(--bg-stone); border:1px solid var(--hairline);
+    display:flex; align-items:center; justify-content:center; margin-bottom:14px; color:var(--redstone-bright);
+  }
+  .card h3{font-size:15.5px; color:var(--parchment); font-weight:600;}
+  .card .cat{
+    display:inline-block; font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--copper); margin:6px 0 10px; border:1px solid var(--copper-dim); padding:2px 7px; border-radius:3px;
+  }
+  .card p{font-size:13.5px; color:var(--parchment-dim);}
+
+  /* ---------- machines ---------- */
+  section.machines{padding:88px 0;}
+  .machine{
+    border:1px solid var(--hairline); border-radius:8px; margin-top:40px; overflow:hidden;
+    background:var(--bg-stone);
+  }
+  .machine-head{
+    padding:30px 32px; display:flex; flex-wrap:wrap; gap:24px; justify-content:space-between;
+    border-bottom:1px solid var(--hairline);
+    background:linear-gradient(120deg, rgba(232,56,13,0.07), transparent 60%);
+  }
+  .machine-head h3{font-family:var(--display); font-size:18px; color:var(--parchment); line-height:1.6; max-width:520px;}
+  .stat-row{display:flex; flex-wrap:wrap; gap:22px;}
+  .stat{font-family:var(--mono); font-size:12px;}
+  .stat .k{color:var(--stone-muted); display:block; text-transform:uppercase; letter-spacing:.08em; font-size:10px; margin-bottom:4px;}
+  .stat .v{color:var(--redstone-bright);}
+  .machine-body{padding:30px 32px; display:grid; grid-template-columns:1.1fr .9fr; gap:36px;}
+  @media(max-width:840px){.machine-body{grid-template-columns:1fr;}}
+  .machine-body h4{
+    font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase; color:var(--copper);
+    margin:22px 0 10px;
+  }
+  .machine-body h4:first-child{margin-top:0;}
+  .machine-body p{font-size:14.5px; color:var(--parchment-dim);}
+  .machine-body ol{margin-left:18px; color:var(--parchment-dim); font-size:14px;}
+  .machine-body ol li{margin-bottom:8px; padding-left:4px;}
+  .machine-body ol li::marker{color:var(--redstone-bright); font-family:var(--mono);}
+
+  table.roles{width:100%; border-collapse:collapse; font-size:13px;}
+  table.roles th{
+    text-align:left; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--stone-muted); border-bottom:1px solid var(--hairline); padding:8px 10px;
+  }
+  table.roles td{padding:10px; border-bottom:1px solid var(--hairline); color:var(--parchment-dim); vertical-align:top;}
+  table.roles td.part{color:var(--parchment); font-weight:600; white-space:nowrap;}
+
+  .compat-note{
+    margin-top:18px; font-size:12.5px; color:var(--stone-muted); border-left:2px solid var(--copper-dim);
+    padding-left:12px;
+  }
+
+  /* ---------- footer ---------- */
+  footer{padding:60px 0 50px; border-top:1px solid var(--hairline);}
+  footer p{font-size:12.5px; color:var(--stone-muted); max-width:720px;}
+  footer .credit-line{margin-top:14px; font-family:var(--mono); font-size:11.5px; color:var(--copper-dim);}
+
+  @media (prefers-reduced-motion: reduce){
+    .brand .dot{animation:none;}
+    * {scroll-behavior:auto !important;}
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span> REDSTONE ENGINEERING</div>
+    <nav class="links">
+      <a href="#components">Component Library</a>
+      <a href="#machines">Advanced Builds</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <svg class="hero-wire" viewBox="0 0 1180 360" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path id="wirepath" d="M -20 300 L 160 300 L 160 200 L 380 200 L 380 260 L 620 260 L 620 120 L 860 120 L 860 190 L 1200 190"
+      fill="none" stroke="#5c2011" stroke-width="3" stroke-linejoin="round"/>
+    <circle r="5" fill="#ff5a26">
+      <animateMotion dur="4.5s" repeatCount="indefinite" rotate="auto">
+        <mpath href="#wirepath"/>
+      </animateMotion>
+    </circle>
+  </svg>
+  <div class="wrap">
+    <div class="eyebrow">A field guide to signal, timing &amp; automation</div>
+    <h1>Powering the world one <span>tick</span> at a time.</h1>
+    <p class="sub">A reference for redstone's core components and the legendary machines survival players have built with them — no glitches, no command blocks, no mods. Just dust, delay, and logic.</p>
+    <div class="rules">
+      <span class="rule-chip">Vanilla mechanics only</span>
+      <span class="rule-chip">No command blocks</span>
+      <span class="rule-chip">No exploited glitches</span>
+      <span class="rule-chip">No mods or datapacks</span>
+    </div>
+  </div>
+</section>
+
+<section class="components" id="components">
+  <div class="wrap">
+    <div class="eyebrow">Part 01</div>
+    <h2 class="section-title">The Component Library</h2>
+    <p class="section-lede">Every redstone machine, from a two-block door opener to a raid farm the size of a village, is built from the same handful of parts. Learn what each one actually does before combining them.</p>
+
+    <div class="filter-row">
+      <span class="tag-pill">Power Source</span>
+      <span class="tag-pill">Logic</span>
+      <span class="tag-pill">Sensor</span>
+      <span class="tag-pill">Actuator</span>
+      <span class="tag-pill">Transport</span>
+      <span class="tag-pill">Output</span>
+      <span class="tag-pill">Input</span>
+      <span class="tag-pill">Utility</span>
+    </div>
+
+    <div class="grid">
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M1 15 L6 15 L6 9 L12 9 L12 15 L19 15" stroke="currentColor" stroke-width="2" fill="none"/></svg></div>
+        <h3>Redstone Dust</h3>
+        <span class="cat">Transport</span>
+        <p>The wire. Carries a signal outward from a source, losing 1 strength per block, up to 15 blocks before it needs boosting.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M9 1 L9 8 L4 8 L11 17 L8 10 L14 10 Z" fill="currentColor"/></svg></div>
+        <h3>Redstone Torch</h3>
+        <span class="cat">Power Source · Logic</span>
+        <p>An always-on power source that also inverts signals — it switches off when the block behind it is powered. This single behavior is the basis of every NOT gate.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><rect x="2" y="8" width="16" height="4" fill="currentColor"/><circle cx="6" cy="10" r="1.6" fill="#1c1510"/><circle cx="12" cy="10" r="1.6" fill="#1c1510"/></svg></div>
+        <h3>Repeater</h3>
+        <span class="cat">Logic</span>
+        <p>Delays a pulse by 1–4 ticks, refreshes signal strength back to full, and can "lock" — freezing its output when side-powered by another repeater.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M3 5 L14 10 L3 15 Z" fill="currentColor"/><rect x="15" y="8" width="3" height="4" fill="currentColor"/></svg></div>
+        <h3>Comparator</h3>
+        <span class="cat">Logic</span>
+        <p>Compares two input signals, or subtracts one from the other. Also reads a chest, hopper, or barrel's fill level as a raw signal strength — the basis of every sorting system.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="10" r="2.4" fill="currentColor"/></svg></div>
+        <h3>Observer</h3>
+        <span class="cat">Sensor</span>
+        <p>Watches the block directly in front of it and fires a single one-tick pulse out its back the instant that block changes — a crop growing, a piston moving, anything.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><rect x="6" y="2" width="8" height="12" fill="currentColor"/><path d="M10 14 L10 18 M7 18 L13 18" stroke="currentColor" stroke-width="2"/></svg></div>
+        <h3>Piston</h3>
+        <span class="cat">Actuator</span>
+        <p>Extends to push up to 12 blocks in a line. The core "mover" behind doors, hidden entrances, and every flying machine.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><rect x="6" y="2" width="8" height="12" fill="currentColor"/><circle cx="10" cy="16" r="2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <h3>Sticky Piston</h3>
+        <span class="cat">Actuator</span>
+        <p>Same as a piston, but its honeycomb face drags the pushed block back on retraction — enabling reversible movement and compact pulling mechanisms.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><rect x="3" y="3" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="7" cy="7" r="1.3" fill="currentColor"/><circle cx="13" cy="7" r="1.3" fill="currentColor"/><circle cx="7" cy="13" r="1.3" fill="currentColor"/><circle cx="13" cy="13" r="1.3" fill="currentColor"/></svg></div>
+        <h3>Dispenser</h3>
+        <span class="cat">Actuator</span>
+        <p>Uses whatever item it holds — fires arrows, splashes water or lava, plants crops, ignites TNT. The workhorse of most automated farms and cannons.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M3 3 L17 3 L12 12 L12 17 L8 17 L8 12 Z" fill="currentColor"/></svg></div>
+        <h3>Dropper</h3>
+        <span class="cat">Actuator · Transport</span>
+        <p>Ejects a single item into whatever is in front of it, rather than using the item — the gentle cousin of the dispenser, used for precise item transfer.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M3 3 L17 3 L12 13 L8 13 Z" fill="none" stroke="currentColor" stroke-width="2"/><rect x="8" y="13" width="4" height="4" fill="currentColor"/></svg></div>
+        <h3>Hopper</h3>
+        <span class="cat">Transport</span>
+        <p>Funnels items downward or sideways into a container. Chained hoppers form the "conveyor belt" backbone of nearly every collection system, and can be locked by a redstone signal.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="9" r="6" fill="currentColor" opacity="0.85"/><rect x="8" y="15" width="4" height="3" fill="currentColor"/></svg></div>
+        <h3>Redstone Lamp</h3>
+        <span class="cat">Output</span>
+        <p>A light source that only glows while powered. Pure output — used constantly as a status indicator for "is this farm running" style dashboards.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><rect x="2" y="9" width="16" height="3" fill="currentColor"/><circle cx="14" cy="10.5" r="3.2" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>
+        <h3>Lever &amp; Button</h3>
+        <span class="cat">Input</span>
+        <p>A lever holds a permanent on/off state; a button fires a short pulse (stone: 1 tick, wood: 1.5s, cross: even longer). The manual override on almost every machine.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><rect x="3" y="12" width="14" height="3" fill="currentColor"/></svg></div>
+        <h3>Pressure Plate</h3>
+        <span class="cat">Sensor</span>
+        <p>Detects weight — a player, mob, item, or minecart — and outputs a signal. Wood plates trigger on anything; stone only on players and mobs.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><line x1="2" y1="10" x2="18" y2="10" stroke="currentColor" stroke-width="2" stroke-dasharray="3 3"/><circle cx="2" cy="10" r="2" fill="currentColor"/><circle cx="18" cy="10" r="2" fill="currentColor"/></svg></div>
+        <h3>Tripwire Hook</h3>
+        <span class="cat">Sensor</span>
+        <p>A hook-and-string pair that detects any entity crossing the line — silent, hard to spot, and a favorite for hidden traps and item-sorting triggers.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="3" fill="currentColor"/><path d="M10 10 L10 3" stroke="currentColor" stroke-width="2"/></svg></div>
+        <h3>Note Block</h3>
+        <span class="cat">Output</span>
+        <p>Plays a pitched sound when powered. Beyond music, engineers use its distinct click as an audible debug signal for testing clocks and timings.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><path d="M2 10 A8 8 0 0 1 18 10 Z" fill="currentColor"/></svg></div>
+        <h3>Daylight Sensor</h3>
+        <span class="cat">Sensor</span>
+        <p>Outputs a signal proportional to sky light level — strong at noon, off at night. Can be right-clicked to invert, making it a simple built-in day/night switch.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="10" cy="10" r="4.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="10" cy="10" r="1.4" fill="currentColor"/></svg></div>
+        <h3>Target Block</h3>
+        <span class="cat">Sensor</span>
+        <p>Emits a signal strength based on how precisely a projectile hits its bullseye — the only block that turns archery accuracy into redstone data.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><rect x="3" y="3" width="14" height="14" fill="currentColor"/></svg></div>
+        <h3>Redstone Block</h3>
+        <span class="cat">Power Source</span>
+        <p>A constant, maximum-strength power source that also counts as a solid block — often pushed by pistons to deliver power exactly where and when it's needed.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-icon"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="7" fill="currentColor" opacity="0.6"/></svg></div>
+        <h3>Slime &amp; Honey Block</h3>
+        <span class="cat">Utility</span>
+        <p>Slime blocks stick to almost any adjacent block (except honey); honey blocks stick only to slime. Pistons using this pair can drag entire structures — the basis of every flying machine.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="machines" id="machines">
+  <div class="wrap">
+    <div class="eyebrow">Part 02</div>
+    <h2 class="section-title">Advanced Builds</h2>
+    <p class="section-lede">Four community-designed machines that push the component library to its limits. Each is built entirely from vanilla blocks and vanilla mechanics — no command blocks, no glitches, no mods — and is credited to the player who designed it.</p>
+
+    <!-- MACHINE 1 -->
+    <div class="machine">
+      <div class="machine-head">
+        <h3>The Orbital Strike Cannon</h3>
+        <div class="stat-row">
+          <div class="stat"><span class="k">Designer</span><span class="v">cubicmetre</span></div>
+          <div class="stat"><span class="k">Best in</span><span class="v">Java Edition</span></div>
+          <div class="stat"><span class="k">Difficulty</span><span class="v">Extreme</span></div>
+          <div class="stat"><span class="k">Category</span><span class="v">TNT Artillery</span></div>
+        </div>
+      </div>
+      <div class="machine-body">
+        <div>
+          <h4>How it works</h4>
+          <p>This is a battery of many parallel TNT cannons wired to fire in a single synchronized volley at a fixed target. Each individual "barrel" is a classic water-housed cannon: a charge of TNT sits in water so its blast doesn't destroy the structure, and detonating it launches a second piece of "shot" TNT into the air, which is timed to explode mid-flight over the target instead of underfoot. Stacking dozens of these barrels side by side, fed automatically and fired together, turns a toy into an area-denial weapon capable of leveling a base in seconds — all using intended TNT physics, not duplication or block-placement glitches.</p>
+          <h4>Build outline</h4>
+          <ol>
+            <li>Construct a single water-housed barrel: a sealed chamber of "charge" TNT submerged in water, with a "shot" block of TNT positioned to be launched by that charge's explosion.</li>
+            <li>Wire a dispenser or direct redstone contact to ignite the charge, and tune a repeater delay so the shot TNT detonates at the desired distance instead of at your feet.</li>
+            <li>Duplicate the barrel dozens of times across a firing line, all aimed at the same target point.</li>
+            <li>Run a single "fire control" bus of redstone dust, boosted with repeaters and redstone-block relays over the long distance, so every barrel receives the trigger signal on the same tick.</li>
+            <li>Feed each barrel's dispenser automatically from a central TNT silo using hopper minecart lines, so the battery can be fired repeatedly without manual reloading.</li>
+            <li>Add a comparator-based ammo check that disables the fire-control bus when the magazine runs low, preventing a dry, useless volley.</li>
+          </ol>
+        </div>
+        <div>
+          <h4>Role of each component</h4>
+          <table class="roles">
+            <tr><th>Part</th><th>Role in this machine</th></tr>
+            <tr><td class="part">Redstone Dust</td><td>Carries the fire-control signal down every barrel row.</td></tr>
+            <tr><td class="part">Repeater</td><td>Tunes each barrel's ignition-to-launch delay, which sets its firing range.</td></tr>
+            <tr><td class="part">Redstone Torch</td><td>Holds each barrel in an inverted "safe" state until the master signal arrives.</td></tr>
+            <tr><td class="part">Dispenser</td><td>Loads or ignites the charge TNT in each barrel.</td></tr>
+            <tr><td class="part">Hopper Minecart</td><td>Automatically resupplies every barrel's TNT from a central magazine.</td></tr>
+            <tr><td class="part">Comparator</td><td>Reads the magazine's fill level and locks firing when ammo runs out.</td></tr>
+            <tr><td class="part">Redstone Block</td><td>Relays the fire signal at full strength across long distances.</td></tr>
+            <tr><td class="part">Lever</td><td>The operator's master trigger for the entire battery.</td></tr>
+          </table>
+          <p class="compat-note">Relies only on core TNT-in-water physics and redstone signal transmission, so it holds up across most modern Java releases; large builds like this are typically staged in creative or with schematics before being reproduced in survival.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MACHINE 2 -->
+    <div class="machine">
+      <div class="machine-head">
+        <h3>Automatic Iron Golem Farm</h3>
+        <div class="stat-row">
+          <div class="stat"><span class="k">Design lineage</span><span class="v">gnembon</span></div>
+          <div class="stat"><span class="k">Best in</span><span class="v">Java 1.16 – 1.21</span></div>
+          <div class="stat"><span class="k">Difficulty</span><span class="v">Moderate</span></div>
+          <div class="stat"><span class="k">Category</span><span class="v">Mob Farm</span></div>
+        </div>
+      </div>
+      <div class="machine-body">
+        <div>
+          <h4>How it works</h4>
+          <p>Villagers that see a zombie-type mob nearby, but can't reach it, become "afraid." If enough villagers in the same village have enough beds claimed and no golem currently exists, the game periodically spawns an iron golem to protect them. This farm cages a permanently visible (but harmless) zombie next to pods of villagers to keep that fear state active forever, then guides every spawned golem into a shaft where fall damage — not a glitch, an intended mechanic — kills it in one hit, dropping iron ingots and poppies straight into a hopper collection line.</p>
+          <h4>Build outline</h4>
+          <ol>
+            <li>Build several small villager "pods," each stocked with beds so the game recognizes a large enough village population.</li>
+            <li>Place a zombie or zombie villager in a glass-walled cage where villagers can see it but it can never reach them.</li>
+            <li>Leave open platforms above or beside the pods where golems have room to spawn.</li>
+            <li>Line the spawning platform with water streams that gently guide new golems toward a central drop shaft.</li>
+            <li>Make the shaft at least 23 blocks deep so the fall alone kills the golem on landing.</li>
+            <li>Place a hopper line under the landing point to catch iron and poppy drops, feeding into a comparator-monitored storage chest.</li>
+          </ol>
+        </div>
+        <div>
+          <h4>Role of each component</h4>
+          <table class="roles">
+            <tr><th>Part</th><th>Role in this machine</th></tr>
+            <tr><td class="part">Hopper</td><td>Collects and transports every iron ingot and poppy to storage.</td></tr>
+            <tr><td class="part">Comparator</td><td>Reads the storage chest's fill level and can lock the hopper line before it overflows.</td></tr>
+            <tr><td class="part">Observer</td><td>Optionally detects new drops entering the hopper line to trigger a status indicator.</td></tr>
+            <tr><td class="part">Redstone Lamp</td><td>Lights up as an "active farm" indicator wired to the observer or comparator.</td></tr>
+            <tr><td class="part">Redstone Torch / Repeater</td><td>Build the small self-resetting clock that drives the optional status indicator.</td></tr>
+          </table>
+          <p class="compat-note">The villager-fear spawning rule has been stable since Minecraft 1.14; this design has stayed reliable through 1.21 with only minor rate tweaks from version to version.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MACHINE 3 -->
+    <div class="machine">
+      <div class="machine-head">
+        <h3>Fully Automated Raid Farm</h3>
+        <div class="stat-row">
+          <div class="stat"><span class="k">Designer</span><span class="v">ilmango</span></div>
+          <div class="stat"><span class="k">Best in</span><span class="v">Java 1.18 – 1.21</span></div>
+          <div class="stat"><span class="k">Difficulty</span><span class="v">Extreme</span></div>
+          <div class="stat"><span class="k">Category</span><span class="v">Mob Farm</span></div>
+        </div>
+      </div>
+      <div class="machine-body">
+        <div>
+          <h4>How it works</h4>
+          <p>Killing an illager captain while the player has the Bad Omen effect starts a raid on the nearest village — an intended game mechanic, not an exploit. This farm baits every wave of that raid (pillagers, vindicators, witches, evokers, and ravagers) onto a minimal fake village stacked with spawning platforms, funnels the mobs down through water streams into a grinder, and automatically sorts the loot — emeralds, totems of undying, enchanted gear — into separate storage.</p>
+          <h4>Build outline</h4>
+          <ol>
+            <li>Establish the smallest structure the game recognizes as a "village" (a claimed bed and workstation) at the farm's base.</li>
+            <li>Stack multiple open spawning platforms above the village, enclosed so raiders can only appear there.</li>
+            <li>Line each platform with water streams angled toward a central vertical shaft.</li>
+            <li>Build an observer- or comparator-driven clock that pulses pistons to open trapdoor "gates," releasing mobs toward the shaft in controlled batches instead of letting them jam up.</li>
+            <li>Finish the shaft with a fall-damage drop into a one-hit kill point.</li>
+            <li>Run a wide hopper floor under the kill point into comparator-sorted chests, separating emeralds and totems from common drops.</li>
+            <li>The player triggers each raid manually by obtaining Bad Omen and killing a captain near the fake village — this step is player action, not redstone, but it's what keeps the farm running.</li>
+          </ol>
+        </div>
+        <div>
+          <h4>Role of each component</h4>
+          <table class="roles">
+            <tr><th>Part</th><th>Role in this machine</th></tr>
+            <tr><td class="part">Observer</td><td>Drives the timing clock that opens and closes each platform's mob-release gate.</td></tr>
+            <tr><td class="part">Piston</td><td>Operates the trapdoor gates, releasing raiders in a controlled rhythm so they don't stack up.</td></tr>
+            <tr><td class="part">Repeater</td><td>Fine-tunes the gate clock's pulse length so mobs have time to pass through each opening.</td></tr>
+            <tr><td class="part">Comparator</td><td>Reads chest fill levels to control sorting of emeralds, totems, and common drops into separate storage.</td></tr>
+            <tr><td class="part">Hopper</td><td>The loot-collection backbone running beneath the entire kill chamber.</td></tr>
+            <tr><td class="part">Redstone Torch</td><td>Provides the base inverted signal the self-resetting gate clock is built from.</td></tr>
+          </table>
+          <p class="compat-note">Illager pathing and raid spawn rules have shifted slightly across versions since the Village &amp; Pillage update (1.14); rebuilds are usually tuned for whichever current release the server is running.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MACHINE 4 -->
+    <div class="machine">
+      <div class="machine-head">
+        <h3>Fully Automatic Melon &amp; Pumpkin Farm</h3>
+        <div class="stat-row">
+          <div class="stat"><span class="k">Designer</span><span class="v">ilmango</span></div>
+          <div class="stat"><span class="k">Best in</span><span class="v">Java 1.17+</span></div>
+          <div class="stat"><span class="k">Difficulty</span><span class="v">Easy – Moderate</span></div>
+          <div class="stat"><span class="k">Category</span><span class="v">Crop Farm</span></div>
+        </div>
+      </div>
+      <div class="machine-body">
+        <div>
+          <h4>How it works</h4>
+          <p>Melon and pumpkin stems grow fruit into the empty block space beside them. An observer aimed at that space sees the block update the instant a fruit appears and fires a one-tick pulse, which triggers a piston to knock the fruit loose. Water underneath sweeps every harvested block into a single channel, where a looping hopper minecart gathers it all into storage — the entire farm runs with zero player interaction once switched on.</p>
+          <h4>Build outline</h4>
+          <ol>
+            <li>Plant rows of melon or pumpkin stems on farmland, leaving one open block beside each stem for the fruit to grow into.</li>
+            <li>Face an observer at each of those empty blocks, output side away from the plant.</li>
+            <li>Wire each observer's pulse to a normal piston positioned to push the grown fruit off its block the instant it appears.</li>
+            <li>Cut a shallow water channel beneath the whole row so every knocked-loose fruit gets swept toward one collection point.</li>
+            <li>Lay powered rail in a loop under the channel and run a hopper minecart continuously across it to gather the drifting items.</li>
+            <li>Feed the minecart's haul into a chest monitored by a comparator, and wire a lever-controlled torch as a master shutoff for the whole observer network.</li>
+          </ol>
+        </div>
+        <div>
+          <h4>Role of each component</h4>
+          <table class="roles">
+            <tr><th>Part</th><th>Role in this machine</th></tr>
+            <tr><td class="part">Observer</td><td>Detects the instant a stem grows fruit and fires the harvest pulse.</td></tr>
+            <tr><td class="part">Piston</td><td>Knocks the newly grown melon or pumpkin off its block so it can be collected.</td></tr>
+            <tr><td class="part">Hopper Minecart</td><td>Loops beneath the channel, sweeping harvested fruit into storage.</td></tr>
+            <tr><td class="part">Comparator</td><td>Reads the storage chest's fill level to manage the collection cart.</td></tr>
+            <tr><td class="part">Repeater</td><td>Keeps each observer's pulse timed correctly against its piston's extension.</td></tr>
+            <tr><td class="part">Redstone Torch &amp; Lever</td><td>Form the master on/off switch that lets a player pause the whole farm.</td></tr>
+          </table>
+          <p class="compat-note">The observer-piston harvest technique has worked since observers were added in 1.11; this specific tileable layout is documented and functioning on 1.17 and later.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>All designs above are original community creations built with unmodified survival-mode mechanics — no command blocks, no duplication or block-update exploits, and no mods or datapacks. Credited designers retain authorship of their builds; this page is an independent reference and is not affiliated with Mojang Studios or Microsoft.</p>
+    <p class="credit-line">Designers referenced: cubicmetre · gnembon · ilmango</p>
+  </div>
+</footer>
+
+</body>
+</html>
